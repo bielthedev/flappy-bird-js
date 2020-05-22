@@ -1,4 +1,4 @@
-console.log('[BielDesu] Flappy Bird');
+console.log('[BielTheDev] Flappy Bird');
 
 const sprites = new Image();
 sprites.src = 'assets/image/sprites.png';
@@ -81,6 +81,119 @@ const Floor = {
     }
 }
 
+const Pipes = {
+    init() {
+        this.first= {
+            top: {
+                sprite: sprites,
+                sourceX: 52,
+                sourceY: 169,
+                spriteW: 52,
+                spriteH: 400,
+                x: canvas.width + 52,
+                y: -250,
+                width: 52,
+                height: 400
+            },
+            bottom: {
+                sprite: sprites,
+                sourceX: 0,
+                sourceY: 169,
+                spriteW: 52,
+                spriteH: 400,
+                x: canvas.width + 52,
+                y: 250,
+                width: 52,
+                height: 400
+            }
+        }
+
+        this.second = {
+            top: {
+                sprite: sprites,
+                sourceX: 52,
+                sourceY: 169,
+                spriteW: 52,
+                spriteH: 400,
+                x: canvas.width + 264,
+                y: -250,
+                width: 52,
+                height: 400
+            },
+            bottom: {
+                sprite: sprites,
+                sourceX: 0,
+                sourceY: 169,
+                spriteW: 52,
+                spriteH: 400,
+                x: canvas.width + 264,
+                y: 250,
+                width: 52,
+                height: 400
+            }
+        }
+
+        this.randomizeGap(this.first);
+        this.randomizeGap(this.second);
+    },
+    draw() {
+        context.drawImage(
+            Pipes.first.top.sprite,
+            Pipes.first.top.sourceX, Pipes.first.top.sourceY,
+            Pipes.first.top.spriteW, Pipes.first.top.spriteH,
+            Pipes.first.top.x, Pipes.first.top.y,
+            Pipes.first.top.width, Pipes.first.top.height
+        );
+
+        context.drawImage(
+            Pipes.first.bottom.sprite,
+            Pipes.first.bottom.sourceX, Pipes.first.bottom.sourceY,
+            Pipes.first.bottom.spriteW, Pipes.first.bottom.spriteH,
+            Pipes.first.bottom.x, Pipes.first.bottom.y,
+            Pipes.first.bottom.width, Pipes.first.bottom.height
+        );
+
+        context.drawImage(
+            Pipes.second.top.sprite,
+            Pipes.second.top.sourceX, Pipes.second.top.sourceY,
+            Pipes.second.top.spriteW, Pipes.second.top.spriteH,
+            Pipes.second.top.x, Pipes.second.top.y,
+            Pipes.second.top.width, Pipes.second.top.height
+        );
+
+        context.drawImage(
+            Pipes.second.bottom.sprite,
+            Pipes.second.bottom.sourceX, Pipes.second.bottom.sourceY,
+            Pipes.second.bottom.spriteW, Pipes.second.bottom.spriteH,
+            Pipes.second.bottom.x, Pipes.second.bottom.y,
+            Pipes.second.bottom.width, Pipes.second.bottom.height
+        );
+    },
+    update() {
+        Pipes.first.bottom.x -= 2;
+        Pipes.first.top.x -= 2;
+        Pipes.second.bottom.x -= 2;
+        Pipes.second.top.x -= 2;
+
+        if(Pipes.first.top.x <= 0 - Pipes.first.top.width) {
+            Pipes.randomizeGap(Pipes.first);
+            Pipes.first.top.x = canvas.width + Pipes.first.top.width;
+            Pipes.first.bottom.x = canvas.width + Pipes.first.bottom.width;
+        }
+        if(Pipes.second.top.x <= 0 - Pipes.second.top.width) {
+            Pipes.randomizeGap(Pipes.second);
+            Pipes.second.top.x = canvas.width + Pipes.second.top.width;
+            Pipes.second.bottom.x = canvas.width + Pipes.second.bottom.width;
+        }
+    },
+    randomizeGap(pair) {
+        const origin = Math.round(-165 * (Math.random() + 1));
+
+        pair.top.y = origin;
+        pair.bottom.y = origin + 500;
+    }
+}
+
 const GetReadyMessage = {
     init() {
         this.sprite = sprites;
@@ -140,8 +253,8 @@ const FlappyBird = {
 
         // Inital Sprite
         this.changeSprite(this.sprites[0]);
-        this.x = 10;
-        this.y = 50;
+        this.x = 25;
+        this.y = 172;
 
         // Movement
         this.gravity = 0.25;
@@ -196,11 +309,40 @@ const FlappyBird = {
         FlappyBird.speed = -FlappyBird.jumpStrength;
     },
     checkCollision() {
-        const baseY = FlappyBird.y + FlappyBird.height;
-        const floorY = Floor.y;
+        // FlappyBird Hitbox
+        const hitbox = {
+            top: FlappyBird.y,
+            right: FlappyBird.x + FlappyBird.width,
+            bottom: FlappyBird.y + FlappyBird.height,
+            left: FlappyBird.x
+        }
 
-        if(baseY >= floorY) return true;
+        // Floor Collision
+        if(hitbox.bottom >= Floor.y) return true;
+
+        // Pipes Collision
+        const pipes = [
+            Pipes.first.bottom,
+            Pipes.first.top,
+            Pipes.second.bottom,
+            Pipes.second.top
+        ];
+
+        for(let pipe in pipes) {
+            // Between Pipes X Range
+            if(hitbox.right >= pipes[pipe].x && hitbox.right <= (pipes[pipe].x + pipes[pipe].width)) {
+                // Between Top Pipe Y Range
+                if(hitbox.top <= (pipes[pipe].y + pipes[pipe].height) && hitbox.top >= pipes[pipe].y) {
+                    return true;
+                }
+                // Between Bottom Pipe Y Range
+                if(hitbox.bottom >= pipes[pipe].y && hitbox.bottom <= (pipes[pipe].y + pipes[pipe].height)) {
+                    return true;
+                }
+            }
+        }
         
+        // None Collision
         return false;
     },
     die() {
@@ -232,13 +374,16 @@ const StartScreen = {
 
 const Gameplay = {
     init() {
+        Pipes.init();
     },
     draw() {
         Background.draw();
+        Pipes.draw();
         Floor.draw();
         FlappyBird.draw();
     },
     update() {
+        Pipes.update();
         Floor.update();
         FlappyBird.animate();
         FlappyBird.update();
