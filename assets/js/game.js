@@ -6,6 +6,11 @@ sprites.src = 'assets/image/sprites.png';
 const sfx_hit = new Audio();
 sfx_hit.src = 'assets/sound/sfx_hit.wav';
 
+const sfx_point = new Audio();
+sfx_hit.src = 'assets/sound/sfx_point.wav';
+
+const font = 'flappy-font';
+
 const canvas = document.getElementById('game-canvas');
 const context = canvas.getContext('2d');
 
@@ -41,7 +46,7 @@ const Background = {
             Background.width, Background.height
         );
     }
-}
+};
 
 const Floor = {
     init() {
@@ -79,7 +84,7 @@ const Floor = {
 
         Floor.x = (moveTo % spriteHalf);
     }
-}
+};
 
 const Pipes = {
     init() {
@@ -175,12 +180,12 @@ const Pipes = {
         Pipes.second.bottom.x -= 2;
         Pipes.second.top.x -= 2;
 
-        if(Pipes.first.top.x <= 0 - Pipes.first.top.width) {
+        if (Pipes.first.top.x <= 0 - Pipes.first.top.width) {
             Pipes.randomizeGap(Pipes.first);
             Pipes.first.top.x = canvas.width + Pipes.first.top.width;
             Pipes.first.bottom.x = canvas.width + Pipes.first.bottom.width;
         }
-        if(Pipes.second.top.x <= 0 - Pipes.second.top.width) {
+        if (Pipes.second.top.x <= 0 - Pipes.second.top.width) {
             Pipes.randomizeGap(Pipes.second);
             Pipes.second.top.x = canvas.width + Pipes.second.top.width;
             Pipes.second.bottom.x = canvas.width + Pipes.second.bottom.width;
@@ -192,7 +197,7 @@ const Pipes = {
         pair.top.y = origin;
         pair.bottom.y = origin + 500;
     }
-}
+};
 
 const GetReadyMessage = {
     init() {
@@ -215,7 +220,48 @@ const GetReadyMessage = {
             GetReadyMessage.width, GetReadyMessage.height
         );
     }
-}
+};
+
+const GameoverMessage = {
+    init() { 
+        this.sprite = sprites;
+        this.sourceX =  134;
+        this.sourceY =  153;
+        this.spriteW =  226;
+        this.spriteH =  200;
+        this.x = (canvas.width / 2) - (226 / 2);
+        this.y = 50;
+        this.width = 226;
+        this.height = 200;
+    },
+    draw() {
+        context.drawImage(
+            GameoverMessage.sprite,
+            GameoverMessage.sourceX, GameoverMessage.sourceY,
+            GameoverMessage.spriteW, GameoverMessage.spriteH,
+            GameoverMessage.x, GameoverMessage.y,
+            GameoverMessage.width, GameoverMessage.height
+        );
+    }
+};
+
+const Score = {
+    init() {
+        this.points = 0;
+    },
+    draw() {
+        context.font = `35px ${font}`;
+        context.textAlign = 'right';
+        context.fillStyle = 'white';
+        context.fillText(Score.points, canvas.width - 10, 40);
+    },
+    update() {
+        if (FlappyBird.x === (Pipes.first.top.x + 1) || FlappyBird.x === (Pipes.second.top.x + 1)) {
+            Score.points += 1;
+            sfx_point.play();
+        }
+    }
+};
 
 const FlappyBird = {
     init() {
@@ -276,7 +322,7 @@ const FlappyBird = {
         );
     },
     update() {
-        if(FlappyBird.checkCollision()) FlappyBird.die();
+        if (FlappyBird.checkCollision()) FlappyBird.die();
 
         FlappyBird.speed = FlappyBird.speed + FlappyBird.gravity;
         FlappyBird.y = FlappyBird.y + FlappyBird.speed;
@@ -284,10 +330,10 @@ const FlappyBird = {
     animate() {
         FlappyBird.currentFrame = FlappyBird.currentFrame + 1;
 
-        if(FlappyBird.currentFrame % FlappyBird.updateFrame === 0) {
+        if (FlappyBird.currentFrame % FlappyBird.updateFrame === 0) {
             const spriteAmmount = FlappyBird.sprites.length;
 
-            if(FlappyBird.currentSprite !== spriteAmmount - 1) {
+            if (FlappyBird.currentSprite !== spriteAmmount - 1) {
                 FlappyBird.currentSprite = FlappyBird.currentSprite + 1;
             } else {
                 FlappyBird.currentSprite = 0;
@@ -315,10 +361,10 @@ const FlappyBird = {
             right: FlappyBird.x + FlappyBird.width,
             bottom: FlappyBird.y + FlappyBird.height,
             left: FlappyBird.x
-        }
+        };
 
         // Floor Collision
-        if(hitbox.bottom >= Floor.y) return true;
+        if (hitbox.bottom >= Floor.y) return true;
 
         // Pipes Collision
         const pipes = [
@@ -328,15 +374,15 @@ const FlappyBird = {
             Pipes.second.top
         ];
 
-        for(let pipe in pipes) {
+        for (let pipe in pipes) {
             // Between Pipes X Range
-            if(hitbox.right >= pipes[pipe].x && hitbox.right <= (pipes[pipe].x + pipes[pipe].width)) {
+            if (hitbox.right >= pipes[pipe].x && hitbox.right <= (pipes[pipe].x + pipes[pipe].width)) {
                 // Between Top Pipe Y Range
-                if(hitbox.top <= (pipes[pipe].y + pipes[pipe].height) && hitbox.top >= pipes[pipe].y) {
+                if (hitbox.top <= (pipes[pipe].y + pipes[pipe].height) && hitbox.top >= pipes[pipe].y) {
                     return true;
                 }
                 // Between Bottom Pipe Y Range
-                if(hitbox.bottom >= pipes[pipe].y && hitbox.bottom <= (pipes[pipe].y + pipes[pipe].height)) {
+                if (hitbox.bottom >= pipes[pipe].y && hitbox.bottom <= (pipes[pipe].y + pipes[pipe].height)) {
                     return true;
                 }
             }
@@ -348,9 +394,9 @@ const FlappyBird = {
     die() {
         sfx_hit.play();
 
-        ScreenManager.setCurrentScreen(StartScreen);
+        ScreenManager.setCurrentScreen(Gameover);
     }
-}
+};
 
 const StartScreen = {
     init() {
@@ -370,28 +416,45 @@ const StartScreen = {
     click() {
         ScreenManager.setCurrentScreen(Gameplay);
     }
-}
+};
 
 const Gameplay = {
     init() {
         Pipes.init();
+        Score.init();
     },
     draw() {
         Background.draw();
         Pipes.draw();
         Floor.draw();
         FlappyBird.draw();
+        Score.draw();
     },
     update() {
         Pipes.update();
         Floor.update();
         FlappyBird.animate();
         FlappyBird.update();
+        Score.update();
     },
     click() {
         FlappyBird.jump();
     }
-}
+};
+
+const Gameover = {
+    init() {
+        GameoverMessage.init();
+    },
+    draw() {
+        GameoverMessage.draw();
+    },
+    update() {
+    },
+    click() {
+        ScreenManager.setCurrentScreen(StartScreen);
+    }
+};
 
 const ScreenManager = {
     setCurrentScreen(screen) {
@@ -399,16 +462,11 @@ const ScreenManager = {
 
         screen.init();
     }
-}
+};
 
-const Init = () => {
-    Start();
-    Update();
-}
-
-const Start = () => {
+function Start() {
     window.addEventListener('click', event => {
-        if(ScreenManager.currentScreen.click) ScreenManager.currentScreen.click();
+        if (ScreenManager.currentScreen.click) ScreenManager.currentScreen.click();
     });
 
     Background.init();
@@ -417,11 +475,16 @@ const Start = () => {
     ScreenManager.setCurrentScreen(StartScreen);
 }
 
-const Update = () => {
+function Update() {
     ScreenManager.currentScreen.draw();
     ScreenManager.currentScreen.update();
 
     requestAnimationFrame(Update);
+}
+
+function Init() {
+    Start();
+    Update();
 }
 
 Init();

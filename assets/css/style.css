@@ -1,3 +1,8 @@
+@font-face {
+    font-family: flappy-font;
+    src: url(../fonts/flappy-font/flappy-font.ttf);
+}
+
 *, *::before, *::after {
     box-sizing: border-box;
     padding: 0;
