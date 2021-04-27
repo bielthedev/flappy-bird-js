@@ -1,4 +1,6 @@
-console.log('[BielTheDev] Flappy Bird');
+console.log('%cflappy-bird-js', 'font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; font-size: 32px; color: #24292e; font-weight: 600; line-height: 1.25;');
+console.log('%cMeu primeiro contato com a API do Canvas. Esse projeto foi feito inteiramente com a ajuda dos tutoriais do Dev Soutinho com um toque de \'deixar as coisas do meu jeitinho\'.\n\nGithub do Projeto:', 'font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; font-size: 16px; color: #24292e; word-wrap: break-word;');
+console.log('https://github.com/gabrielandradedev/flappy-bird-js');
 
 const sprites = new Image();
 sprites.src = 'assets/image/sprites.png';
@@ -207,7 +209,7 @@ const GetReadyMessage = {
         this.spriteW = 174;
         this.spriteH = 152;
         this.x = (canvas.width / 2) - (174 / 2);
-        this.y = 50;
+        this.y = (canvas.height / 2) - (152 / 2);
         this.width = 174;
         this.height = 152;
     },
@@ -230,7 +232,7 @@ const GameoverMessage = {
         this.spriteW =  226;
         this.spriteH =  200;
         this.x = (canvas.width / 2) - (226 / 2);
-        this.y = 50;
+        this.y = (canvas.height / 2) - (200 / 2);
         this.width = 226;
         this.height = 200;
     },
@@ -245,21 +247,114 @@ const GameoverMessage = {
     }
 };
 
+const Medals = {
+    init() { 
+        this.bronze = {
+            sprite: sprites,
+            sourceX: 48,
+            sourceY: 124,
+            spriteW: 44,
+            spriteH: 44,
+            x: 73,
+            y: 226,
+            width: 44,
+            height: 44
+        };
+
+        this.silver = {
+            sprite: sprites,
+            sourceX: 48,
+            sourceY: 78,
+            spriteW: 44,
+            spriteH: 44,
+            x: 73,
+            y: 226,
+            width: 44,
+            height: 44
+        };
+
+        this.gold = {
+            sprite: sprites,
+            sourceX: 0,
+            sourceY: 124,
+            spriteW: 44,
+            spriteH: 44,
+            x: 73,
+            y: 226,
+            width: 44,
+            height: 44
+        };
+
+        this.platinum = {
+            sprite: sprites,
+            sourceX: 0,
+            sourceY: 78,
+            spriteW: 44,
+            spriteH: 44,
+            x: 73,
+            y: 226,
+            width: 44,
+            height: 44
+        };
+
+        this.currentMedal = null;
+    },
+    draw() {
+        if (this.currentMedal !== null) {
+            context.drawImage(
+                Medals[Medals.currentMedal].sprite,
+                Medals[Medals.currentMedal].sourceX, Medals[Medals.currentMedal].sourceY,
+                Medals[Medals.currentMedal].spriteW, Medals[Medals.currentMedal].spriteH,
+                Medals[Medals.currentMedal].x, Medals[Medals.currentMedal].y,
+                Medals[Medals.currentMedal].width, Medals[Medals.currentMedal].height
+            );
+        }
+    }
+};
+
 const Score = {
     init() {
         this.points = 0;
     },
     draw() {
         context.font = `35px ${font}`;
-        context.textAlign = 'right';
+        context.textAlign = 'center';
         context.fillStyle = 'white';
-        context.fillText(Score.points, canvas.width - 10, 40);
+        context.fillText(Score.points, canvas.width / 2, 50);
     },
     update() {
         if (FlappyBird.x === (Pipes.first.top.x + 1) || FlappyBird.x === (Pipes.second.top.x + 1)) {
             Score.points += 1;
             sfx_point.play();
         }
+    }
+};
+
+const GameoverScore = {
+    init() {
+        this.points = Score.points;
+    },
+    draw() {
+        context.font = `16px ${font}`;
+        context.textAlign = 'right';
+        context.fillStyle = 'white';
+        context.fillText(GameoverScore.points, 252, 232);
+    }
+};
+
+const GameoverHighscore = {
+    init() {
+        if (!this.points) {
+            this.points = Score.points;
+        } else {
+            this.points = Math.max(Score.points, GameoverHighscore.points);
+        }
+    },
+    draw() {
+        context.font = `16px ${font}`;
+        context.textAlign = 'right';
+        context.fillStyle = 'white';
+        context.fillText(GameoverHighscore.points, 252, 274);
     }
 };
 
@@ -444,10 +539,32 @@ const Gameplay = {
 
 const Gameover = {
     init() {
+        Background.draw();
+        Pipes.draw();
+        Floor.draw();
+        FlappyBird.draw();
+
         GameoverMessage.init();
+        Medals.init();
+        GameoverScore.init();
+        GameoverHighscore.init();
+
+        if (Score.points >= 40) {
+            Medals.currentMedal = 'platinum';
+        } else if (Score.points >= 30) {
+            Medals.currentMedal = 'gold';
+        } else if (Score.points >= 20) {
+            Medals.currentMedal = 'silver';
+        } else if (Score.points >= 10) {
+            Medals.currentMedal = 'bronze';
+        }
     },
     draw() {
         GameoverMessage.draw();
+
+        Medals.draw();
+        GameoverScore.draw();
+        GameoverHighscore.draw();
     },
     update() {
     },
