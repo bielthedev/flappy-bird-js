@@ -9,7 +9,7 @@ const sfx_hit = new Audio();
 sfx_hit.src = 'assets/sound/sfx_hit.wav';
 
 const sfx_point = new Audio();
-sfx_hit.src = 'assets/sound/sfx_point.wav';
+sfx_point.src = 'assets/sound/sfx_point.wav';
 
 const font = 'flappy-font';
 
